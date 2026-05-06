@@ -1,0 +1,120 @@
+\section{Source Code}
+
+This section presents key components of the CampusEvents system including controller, service, entity, repository, and frontend template.
+
+% ---------------- CONTROLLER ----------------
+\begin{lstlisting}[language=Java, caption=Event Controller]
+
+@Controller
+@RequestMapping("/events")
+public class EventController {
+
+    @Autowired
+    private EventService eventService;
+
+    @GetMapping
+    public String getAllEvents(Model model) {
+        model.addAttribute("events", eventService.getAllEvents());
+        return "events";
+    }
+
+    @GetMapping("/new")
+    public String showCreateForm(Model model) {
+        model.addAttribute("event", new Event());
+        return "create_event";
+    }
+
+    @PostMapping("/save")
+    public String saveEvent(@ModelAttribute Event event) {
+        eventService.saveEvent(event);
+        return "redirect:/events";
+    }
+
+    @GetMapping("/delete/{id}")
+    public String deleteEvent(@PathVariable Long id) {
+        eventService.deleteEvent(id);
+        return "redirect:/events";
+    }
+}
+\end{lstlisting}
+
+% ---------------- SERVICE ----------------
+\begin{lstlisting}[language=Java, caption=Event Service]
+
+@Service
+public class EventService {
+
+    @Autowired
+    private EventRepository eventRepository;
+
+    public List<Event> getAllEvents() {
+        return eventRepository.findAll();
+    }
+
+    public void saveEvent(Event event) {
+        eventRepository.save(event);
+    }
+
+    public void deleteEvent(Long id) {
+        eventRepository.deleteById(id);
+    }
+}
+\end{lstlisting}
+
+% ---------------- ENTITY ----------------
+\begin{lstlisting}[language=Java, caption=Event Entity]
+
+@Entity
+public class Event {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String title;
+    private String description;
+    private String date;
+    private int capacity;
+
+    // Getters and Setters
+}
+\end{lstlisting}
+
+% ---------------- REPOSITORY ----------------
+\begin{lstlisting}[language=Java, caption=Event Repository]
+
+@Repository
+public interface EventRepository extends JpaRepository<Event, Long> {
+}
+\end{lstlisting}
+
+% ---------------- HTML ----------------
+\begin{lstlisting}[language=HTML, caption=Event Listing Page (Thymeleaf)]
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Events</title>
+</head>
+<body>
+
+<h2>Available Events</h2>
+
+<table>
+    <tr>
+        <th>Title</th>
+        <th>Date</th>
+        <th>Capacity</th>
+    </tr>
+
+    <tr th:each="event : ${events}">
+        <td th:text="${event.title}"></td>
+        <td th:text="${event.date}"></td>
+        <td th:text="${event.capacity}"></td>
+    </tr>
+
+</table>
+
+</body>
+</html>
+\end{lstlisting}
